@@ -8,6 +8,9 @@ have a moving average view, so it is very difficult to see trends.
 ![Deaths](images/deaths.png)
 
 ## Components
+* Data source: [DataDF - COVID-19 Cases Summarized by Date, Transmission and
+  Case Disposition](https://data.sfgov.org/COVID-19/COVID-19-Cases-Summarized-by-Date-Transmission-and/tvq9-ec9w)
+  * HTTP/JSON API: `https://data.sfgov.org/resource/tvq9-ec9w.json`
 * InfluxDB to house the timeseries data
 * Grafana to create the dashboard
 * Simple application to grab data from JSON API and write to InfluxDB
