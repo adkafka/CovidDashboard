@@ -53,3 +53,8 @@ $ sbt run
 * `http://localhost:3000/`
 * Import
 * Select `dashboard/Covid-19 SF.json`
+
+## TODO
+* [ ] Unit tests
+* [ ] Automate bootstrapping steps above
+* [ ] Generalize to other data sources
