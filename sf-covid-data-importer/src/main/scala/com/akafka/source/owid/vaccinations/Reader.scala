@@ -5,8 +5,7 @@ import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.{HttpRequest, Uri}
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.{Sink, Source}
-import com.akafka.data.{CovidRecord, VaccinationRecord}
-import io.circe
+import com.akafka.data.VaccinationRecord
 
 import scala.concurrent.{ExecutionContext, Future}
 

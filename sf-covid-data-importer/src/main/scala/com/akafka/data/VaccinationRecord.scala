@@ -13,31 +13,57 @@ object VaccinationRecord {
    *   Argentina,ARG,2020-12-30,,15656.5,,346.42
    *   Argentina,ARG,2020-12-31,32013,15656.5,0.07,346.42
    */
-  def fromSingleRow(row: String): Either[String, VaccinationRecord] = {
+  def fromSingleRow(locationIndex: Int, dateIndex: Int, tIndex: Int, dIndex: Int, tphIndex: Int, dphIndex: Int)(row: String): Either[String, VaccinationRecord] = {
     val fields = row.split(',').toList
 
     for {
-      location <- fields.headOption.toRight("Missing location")
-      epochMs <- fields.lift(2).toRight("Missing date").flatMap(dateToEpoch)
-      totalVaccinations <- fields.lift(3).toRight("Missing total").map(parseLong)
+      location <- fields.lift(locationIndex).toRight("Missing location")
+      epochMs <- fields.lift(dateIndex).toRight("Missing date").flatMap(dateToEpoch)
+      totalVaccinations <- fields.lift(tIndex).toRight("Missing total").map(parseLong)
     } yield VaccinationRecord(
       location = location,
       epochMs = epochMs,
       totalVaccinations = totalVaccinations,
-      dailyVaccinations = fields.lift(4).flatMap(_.toDoubleOption),
-      totalVaccinationsPerHundred = fields.lift(5).flatMap(_.toDoubleOption),
-      dailyVaccinationsPerMillion = fields.lift(6).flatMap(_.toDoubleOption)
+      dailyVaccinations = fields.lift(dIndex).flatMap(_.toDoubleOption),
+      totalVaccinationsPerHundred = fields.lift(tphIndex).flatMap(_.toDoubleOption),
+      dailyVaccinationsPerMillion = fields.lift(dphIndex).flatMap(_.toDoubleOption)
     )
   }
 
   def fromCsvRows(rows: String): Either[String, List[VaccinationRecord]] = {
+    def getIdx(cols: List[String], column: String): Either[String, Int] = {
+      val idx = cols.indexOf(column)
+      if (idx >= 0) Right(idx)
+      else Left(s"$column not found in header")
+    }
+
     import cats.implicits._
 
-    rows
-      .split('\n')
-      .toList
-      .drop(1) // drop header
-      .traverse(r => fromSingleRow(r).leftMap(e => s"Invalid Row. Error : $e\nRow : $r"))
+    rows.split('\n').toList match {
+      case header :: data =>
+        val cols = header.split(',').toList
+        for {
+          locationColumn <- getIdx(cols, "location")
+          dateIndex <- getIdx(cols, "date")
+          tIndex <- getIdx(cols, "total_vaccinations")
+          dIndex <- getIdx(cols, "daily_vaccinations")
+          tphIndex <- getIdx(cols, "total_vaccinations_per_hundred")
+          dphIndex <- getIdx(cols, "daily_vaccinations_per_million")
+
+          parser = fromSingleRow(
+            locationIndex = locationColumn,
+            dateIndex = dateIndex,
+            tIndex = tIndex,
+            dIndex = dIndex,
+            tphIndex = tphIndex,
+            dphIndex = dphIndex
+          )(_)
+
+          parsed <- data.traverse(parser)
+        } yield parsed
+      case Nil =>
+        Left("Header row not found")
+    }
   }
 
   def dateToEpoch(date: String): Either[String, Long] = {
