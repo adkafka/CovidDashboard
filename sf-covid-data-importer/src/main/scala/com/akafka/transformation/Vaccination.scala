@@ -3,13 +3,10 @@ package com.akafka.transformation
 import com.akafka.data.VaccinationRecord
 
 object Vaccination {
-  def toInfluxProtocol(records: List[VaccinationRecord]): Either[String, List[String]] = {
-    import cats.implicits._
-    records.traverse(toInfluxProtocol)
-  }
+  def toInfluxProtocol(records: List[VaccinationRecord]): List[String] = records.flatMap(toInfluxProtocol)
 
   /** Returns an error string if can't translate */
-  def toInfluxProtocol(record: VaccinationRecord): Either[String, String] = {
+  def toInfluxProtocol(record: VaccinationRecord): Option[String] = {
     val location = record.location.replaceAll(" ", "_")
     val fields =
       record.totalVaccinations.map(x => s"total_vaccinations=$x,") ::
@@ -18,11 +15,11 @@ object Vaccination {
       record.dailyVaccinationsPerMillion.map(x => s"daily_vaccinations_per_million=$x,") :: Nil
 
     if (fields.forall(_.isEmpty)) {
-      Left("All optional fields omitted")
+      None
     }
     else {
       val fieldsStr = fields.map(_.getOrElse("")).reduce(_ + _).dropRight(1) // drop trailing ,
-      Right(s"vaccinations,location=$location $fieldsStr ${record.epochMs}")
+      Some(s"vaccinations,location=$location $fieldsStr ${record.epochMs}")
     }
   }
 }

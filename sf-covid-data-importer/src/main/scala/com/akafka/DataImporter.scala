@@ -27,7 +27,7 @@ object DataImporter extends App {
     val client = new influx.Writer(database = "vaccination")
     for {
       data <- EitherT(VaccinationReader.getData(url = url))
-      transformed <- EitherT.fromEither[Future](Vaccination.toInfluxProtocol(data))
+      transformed <- EitherT.pure[Future, String](Vaccination.toInfluxProtocol(data))
       write <- EitherT.right[String](client.write(transformed))
     } yield (data, transformed, write)
   }
