@@ -59,7 +59,7 @@ object VaccinationRecord {
             dphIndex = dphIndex
           )(_)
 
-          parsed <- data.traverse(parser)
+          parsed <- Right(data.mapFilter(x => parser(x).toOption))
         } yield parsed
       case Nil =>
         Left("Header row not found")
