@@ -46,7 +46,7 @@ object DataImporter extends App {
   implicit val ec: ExecutionContext = system.dispatcher
   implicit val mat: ActorMaterializer = ActorMaterializer()
 
-  val sfResult = sfCovidImporter("https://data.sfgov.org/resource/tvq9-ec9w.json")
+  val sfResult = sfCovidImporter("https://data.sfgov.org/resource/tvq9-ec9w.json?$limit=5000")
   val vaccinationResult = vaccinationImporter("https://covid.ourworldindata.org/data/vaccinations/vaccinations.csv")
 
   logResult(sfResult){
